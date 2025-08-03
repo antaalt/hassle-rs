@@ -8,7 +8,7 @@ use crate::ffi::*;
 use crate::os::{HRESULT, LPCWSTR, LPWSTR, WCHAR};
 use crate::utils::{from_wide, to_wide, HassleError, Result};
 use com::{class, interfaces::IUnknown, production::Class, production::ClassAllocation, Interface};
-use libloading::{Library, Symbol};
+use libloading::{library_filename, Library, Symbol};
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
@@ -520,15 +520,7 @@ impl Dxc {
     /// `dxc_path` can point to a library directly or the directory containing the library,
     /// in which case the appended filename depends on the platform.
     pub fn new(lib_path: Option<PathBuf>) -> Result<Self> {
-        let lib_path = if let Some(lib_path) = lib_path {
-            if lib_path.is_file() {
-                lib_path
-            } else {
-                lib_path.join(dxcompiler_lib_name())
-            }
-        } else {
-            dxcompiler_lib_name().to_owned()
-        };
+        let lib_path = lib_path.unwrap_or_else(|| PathBuf::from(library_filename("dxcompiler")));
         let dxc_lib =
             unsafe { Library::new(&lib_path) }.map_err(|e| HassleError::LoadLibraryError {
                 filename: lib_path,
@@ -684,15 +676,7 @@ impl Dxil {
     /// `dxil_path` can point to a library directly or the directory containing the library,
     /// in which case `dxil.dll` is appended.
     pub fn new(lib_path: Option<PathBuf>) -> Result<Self> {
-        let lib_path = if let Some(lib_path) = lib_path {
-            if lib_path.is_file() {
-                lib_path
-            } else {
-                lib_path.join("dxil.dll")
-            }
-        } else {
-            PathBuf::from("dxil.dll")
-        };
+        let lib_path = lib_path.unwrap_or_else(|| PathBuf::from(library_filename("dxil")));
 
         let dxil_lib =
             unsafe { Library::new(&lib_path) }.map_err(|e| HassleError::LoadLibraryError {
