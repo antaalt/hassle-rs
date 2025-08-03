@@ -681,16 +681,8 @@ pub struct Dxil {
 }
 
 impl Dxil {
-    #[cfg(not(windows))]
-    pub fn new(_: Option<PathBuf>) -> Result<Self> {
-        Err(HassleError::WindowsOnly(
-            "DXIL Signing is only supported on Windows".to_string(),
-        ))
-    }
-
     /// `dxil_path` can point to a library directly or the directory containing the library,
     /// in which case `dxil.dll` is appended.
-    #[cfg(windows)]
     pub fn new(lib_path: Option<PathBuf>) -> Result<Self> {
         let lib_path = if let Some(lib_path) = lib_path {
             if lib_path.is_file() {
